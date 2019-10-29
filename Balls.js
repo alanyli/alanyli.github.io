@@ -6009,11 +6009,13 @@ var elm$json$Json$Decode$errorToStringHelp = F2(
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var author$project$Examples$Balls$init = function (_n0) {
-	var m = A2(
+	var balls = A2(
 		elm$core$List$map,
 		author$project$Examples$Balls$genBall,
 		A2(elm$core$List$range, 1, author$project$Examples$Balls$numBalls));
-	return _Utils_Tuple2(m, elm$core$Platform$Cmd$none);
+	return _Utils_Tuple2(
+		{balls: balls, texture: elm$core$Maybe$Nothing},
+		elm$core$Platform$Cmd$none);
 };
 var author$project$Examples$Balls$AnimationFrame = function (a) {
 	return {$: 'AnimationFrame', a: a};
@@ -6878,7 +6880,7 @@ var author$project$Examples$Balls$collide = F2(
 			}
 		}
 	});
-var author$project$Examples$Balls$collision = function (model) {
+var author$project$Examples$Balls$collision = function (allBalls) {
 	var updateBall = function (b) {
 		return A3(
 			elm$core$List$foldl,
@@ -6887,7 +6889,7 @@ var author$project$Examples$Balls$collision = function (model) {
 					return A2(author$project$Examples$Balls$collide, b1, b2);
 				}),
 			b,
-			model);
+			allBalls);
 	};
 	return A2(
 		elm$core$List$map,
@@ -6902,12 +6904,12 @@ var author$project$Examples$Balls$collision = function (model) {
 						balls);
 				}),
 			_List_Nil,
-			model));
+			allBalls));
 };
 var author$project$Examples$Balls$gForce = 1;
 var elm_explorations$linear_algebra$Math$Vector2$add = _MJS_v2add;
 var author$project$Examples$Balls$gravity = F2(
-	function (timestep, model) {
+	function (timestep, balls) {
 		var f = function (b) {
 			return _Utils_update(
 				b,
@@ -6923,27 +6925,47 @@ var author$project$Examples$Balls$gravity = F2(
 						A2(elm_explorations$linear_algebra$Math$Vector2$vec2, 0, author$project$Examples$Balls$gForce * timestep))
 				});
 		};
-		return A2(elm$core$List$map, f, model);
+		return A2(elm$core$List$map, f, balls);
 	});
 var author$project$Examples$Balls$update = F2(
 	function (msg, model) {
-		if (msg.$ === 'AnimationFrame') {
-			var deltaTime = msg.a;
-			var m = A2(
-				author$project$Examples$Balls$gravity,
-				deltaTime * 1.0e-2,
-				author$project$Examples$Balls$collision(model));
-			return _Utils_Tuple2(m, elm$core$Platform$Cmd$none);
-		} else {
-			return _Utils_Tuple2(
-				A2(
-					elm$core$List$cons,
-					author$project$Examples$Balls$genBall(
-						elm$core$List$length(model)),
-					model),
-				elm$core$Platform$Cmd$none);
+		switch (msg.$) {
+			case 'AnimationFrame':
+				var deltaTime = msg.a;
+				var balls = A2(
+					author$project$Examples$Balls$gravity,
+					deltaTime * 1.0e-2,
+					author$project$Examples$Balls$collision(model.balls));
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{balls: balls}),
+					elm$core$Platform$Cmd$none);
+			case 'MouseClick':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							balls: A2(
+								elm$core$List$cons,
+								author$project$Examples$Balls$genBall(
+									elm$core$List$length(model.balls)),
+								model.balls)
+						}),
+					elm$core$Platform$Cmd$none);
+			default:
+				var m = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{texture: m}),
+					elm$core$Platform$Cmd$none);
 		}
 	});
+var author$project$Examples$Balls$TextureLoaded = function (a) {
+	return {$: 'TextureLoaded', a: a};
+};
+var author$project$Examples$Balls$hambergerUrl = './hamberger.png';
 var author$project$Examples$Balls$toTuple = function (v) {
 	return _Utils_Tuple2(
 		elm_explorations$linear_algebra$Math$Vector2$getX(v),
@@ -7097,6 +7119,22 @@ var joakin$elm_canvas$Canvas$shapes = F2(
 					commands: _List_Nil,
 					drawOp: joakin$elm_canvas$Canvas$Internal$Canvas$NotSpecified,
 					drawable: joakin$elm_canvas$Canvas$Internal$Canvas$DrawableShapes(ss)
+				}));
+	});
+var joakin$elm_canvas$Canvas$Internal$Canvas$DrawableTexture = F2(
+	function (a, b) {
+		return {$: 'DrawableTexture', a: a, b: b};
+	});
+var joakin$elm_canvas$Canvas$texture = F3(
+	function (settings, p, t) {
+		return A2(
+			joakin$elm_canvas$Canvas$addSettingsToRenderable,
+			settings,
+			joakin$elm_canvas$Canvas$Renderable(
+				{
+					commands: _List_Nil,
+					drawOp: joakin$elm_canvas$Canvas$Internal$Canvas$NotSpecified,
+					drawable: A2(joakin$elm_canvas$Canvas$Internal$Canvas$DrawableTexture, p, t)
 				}));
 	});
 var elm$html$Html$Attributes$height = function (n) {
@@ -7813,16 +7851,6 @@ var joakin$elm_canvas$Canvas$toHtmlWith = F3(
 				_Utils_Tuple2('__canvas', joakin$elm_canvas$Canvas$cnvs),
 				A2(elm$core$List$map, joakin$elm_canvas$Canvas$renderTextureSource, options.textures)));
 	});
-var joakin$elm_canvas$Canvas$toHtml = F3(
-	function (_n0, attrs, entities) {
-		var w = _n0.a;
-		var h = _n0.b;
-		return A3(
-			joakin$elm_canvas$Canvas$toHtmlWith,
-			{height: h, textures: _List_Nil, width: w},
-			attrs,
-			entities);
-	});
 var joakin$elm_canvas$Canvas$Internal$Canvas$SettingDrawOp = function (a) {
 	return {$: 'SettingDrawOp', a: a};
 };
@@ -7834,6 +7862,23 @@ var joakin$elm_canvas$Canvas$Settings$stroke = function (color) {
 	return joakin$elm_canvas$Canvas$Internal$Canvas$SettingDrawOp(
 		joakin$elm_canvas$Canvas$Internal$Canvas$Stroke(color));
 };
+var joakin$elm_canvas$Canvas$Texture$dimensions = function (texture) {
+	if (texture.$ === 'TImage') {
+		var image = texture.a;
+		return {height: image.height, width: image.width};
+	} else {
+		var data = texture.a;
+		return {height: data.height, width: data.width};
+	}
+};
+var joakin$elm_canvas$Canvas$Internal$Texture$TSImageUrl = F2(
+	function (a, b) {
+		return {$: 'TSImageUrl', a: a, b: b};
+	});
+var joakin$elm_canvas$Canvas$Texture$loadFromImageUrl = F2(
+	function (url, onLoad) {
+		return A2(joakin$elm_canvas$Canvas$Internal$Texture$TSImageUrl, url, onLoad);
+	});
 var author$project$Examples$Balls$view = function (model) {
 	var renderBox = function (box) {
 		return A2(
@@ -7851,23 +7896,41 @@ var author$project$Examples$Balls$view = function (model) {
 					box.down - box.up)
 				]));
 	};
-	var renderBall = function (ball) {
-		return A2(
-			joakin$elm_canvas$Canvas$shapes,
-			_List_fromArray(
-				[
-					joakin$elm_canvas$Canvas$Settings$fill(ball.color)
-				]),
-			_List_fromArray(
-				[
-					A2(
-					joakin$elm_canvas$Canvas$circle,
-					author$project$Examples$Balls$toTuple(ball.pos),
-					ball.radius)
-				]));
-	};
+	var renderBall = F2(
+		function (mTex, ball) {
+			if (mTex.$ === 'Nothing') {
+				return A2(
+					joakin$elm_canvas$Canvas$shapes,
+					_List_fromArray(
+						[
+							joakin$elm_canvas$Canvas$Settings$fill(ball.color)
+						]),
+					_List_fromArray(
+						[
+							A2(
+							joakin$elm_canvas$Canvas$circle,
+							author$project$Examples$Balls$toTuple(ball.pos),
+							ball.radius)
+						]));
+			} else {
+				var tex = mTex.a;
+				var _n1 = joakin$elm_canvas$Canvas$Texture$dimensions(tex);
+				var width = _n1.width;
+				var height = _n1.height;
+				var ofs = A2(elm_explorations$linear_algebra$Math$Vector2$vec2, width / 2, height / 2);
+				return A3(
+					joakin$elm_canvas$Canvas$texture,
+					_List_Nil,
+					author$project$Examples$Balls$toTuple(
+						A2(elm_explorations$linear_algebra$Math$Vector2$sub, ball.pos, ofs)),
+					tex);
+			}
+		});
 	var boxShape = renderBox(author$project$Examples$Balls$boxOne);
-	var ballShapes = A2(elm$core$List$map, renderBall, model);
+	var ballShapes = A2(
+		elm$core$List$map,
+		renderBall(model.texture),
+		model.balls);
 	var background = A2(
 		joakin$elm_canvas$Canvas$shapes,
 		_List_fromArray(
@@ -7883,10 +7946,15 @@ var author$project$Examples$Balls$view = function (model) {
 				author$project$Examples$Balls$h)
 			]));
 	return A3(
-		joakin$elm_canvas$Canvas$toHtml,
-		_Utils_Tuple2(
-			elm$core$Basics$round(author$project$Examples$Balls$w),
-			elm$core$Basics$round(author$project$Examples$Balls$h)),
+		joakin$elm_canvas$Canvas$toHtmlWith,
+		{
+			height: elm$core$Basics$round(author$project$Examples$Balls$h),
+			textures: _List_fromArray(
+				[
+					A2(joakin$elm_canvas$Canvas$Texture$loadFromImageUrl, author$project$Examples$Balls$hambergerUrl, author$project$Examples$Balls$TextureLoaded)
+				]),
+			width: elm$core$Basics$round(author$project$Examples$Balls$w)
+		},
 		_List_Nil,
 		A2(
 			elm$core$List$cons,
