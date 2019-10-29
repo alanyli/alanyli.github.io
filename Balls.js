@@ -5518,7 +5518,6 @@ var author$project$Examples$Balls$ballColor = function (seed) {
 	var b = _n2.a;
 	return A4(avh4$elm_color$Color$rgba, r, g, b, 0.5);
 };
-var author$project$Examples$Balls$h = 500;
 var author$project$Examples$Balls$mkBall = F4(
 	function (id, center, speed, color) {
 		return {color: color, name: id, pos: center, prev_pos: center, radius: 20, speed: speed};
@@ -5547,7 +5546,7 @@ var author$project$Examples$Balls$genBall = function (i) {
 	return A4(
 		author$project$Examples$Balls$mkBall,
 		i,
-		A2(elm_explorations$linear_algebra$Math$Vector2$vec2, author$project$Examples$Balls$w / 2, author$project$Examples$Balls$h / 2),
+		A2(elm_explorations$linear_algebra$Math$Vector2$vec2, author$project$Examples$Balls$w / 2, 5),
 		A2(
 			elm_explorations$linear_algebra$Math$Vector2$vec2,
 			A2(elm$core$Basics$modBy, 20, i * 4236),
@@ -6823,6 +6822,7 @@ var author$project$Examples$Balls$bounce = F2(
 				speed: A2(elm_explorations$linear_algebra$Math$Vector2$vec2, newVelX, newVelY)
 			});
 	});
+var author$project$Examples$Balls$h = 500;
 var author$project$Examples$Balls$mkBox = F4(
 	function (l, r, u, d) {
 		var inet = 2;
