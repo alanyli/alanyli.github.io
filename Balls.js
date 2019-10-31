@@ -5518,16 +5518,19 @@ var author$project$Examples$Balls$ballColor = function (seed) {
 	var b = _n2.a;
 	return A4(avh4$elm_color$Color$rgba, r, g, b, 0.5);
 };
-var author$project$Examples$Balls$mkBall = F4(
-	function (id, center, speed, color) {
-		return {color: color, name: id, pos: center, prev_pos: center, radius: 20, speed: speed};
+var author$project$Examples$Balls$mkBall = F5(
+	function (id, center, speed, color, texture_id) {
+		return {color: color, name: id, pos: center, prev_pos: center, radius: 20, speed: speed, texture_id: texture_id};
 	});
-var author$project$Examples$Balls$w = 500;
+var author$project$Examples$Balls$w = 600;
 var elm$core$Basics$apR = F2(
 	function (x, f) {
 		return f(x);
 	});
-var elm$core$Basics$modBy = _Basics_modBy;
+var elm$core$Tuple$first = function (_n0) {
+	var x = _n0.a;
+	return x;
+};
 var elm$random$Random$initialSeed = function (x) {
 	var _n0 = elm$random$Random$next(
 		A2(elm$random$Random$Seed, 0, 1013904223));
@@ -5537,22 +5540,69 @@ var elm$random$Random$initialSeed = function (x) {
 	return elm$random$Random$next(
 		A2(elm$random$Random$Seed, state2, incr));
 };
+var elm$core$Basics$eq = _Utils_equal;
+var elm$core$Basics$remainderBy = _Basics_remainderBy;
+var elm$random$Random$int = F2(
+	function (a, b) {
+		return elm$random$Random$Generator(
+			function (seed0) {
+				var _n0 = (_Utils_cmp(a, b) < 0) ? _Utils_Tuple2(a, b) : _Utils_Tuple2(b, a);
+				var lo = _n0.a;
+				var hi = _n0.b;
+				var range = (hi - lo) + 1;
+				if (!((range - 1) & range)) {
+					return _Utils_Tuple2(
+						(((range - 1) & elm$random$Random$peel(seed0)) >>> 0) + lo,
+						elm$random$Random$next(seed0));
+				} else {
+					var threshhold = (((-range) >>> 0) % range) >>> 0;
+					var accountForBias = function (seed) {
+						accountForBias:
+						while (true) {
+							var x = elm$random$Random$peel(seed);
+							var seedN = elm$random$Random$next(seed);
+							if (_Utils_cmp(x, threshhold) < 0) {
+								var $temp$seed = seedN;
+								seed = $temp$seed;
+								continue accountForBias;
+							} else {
+								return _Utils_Tuple2((x % range) + lo, seedN);
+							}
+						}
+					};
+					return accountForBias(seed0);
+				}
+			});
+	});
 var elm$core$Maybe$Just = function (a) {
 	return {$: 'Just', a: a};
 };
 var elm$core$Maybe$Nothing = {$: 'Nothing'};
 var elm_explorations$linear_algebra$Math$Vector2$vec2 = _MJS_v2;
 var author$project$Examples$Balls$genBall = function (i) {
-	return A4(
+	var seed = elm$random$Random$initialSeed(i);
+	var n = A2(
+		elm$random$Random$step,
+		A2(elm$random$Random$int, 0, 2),
+		seed).a;
+	var _n0 = A2(
+		elm$random$Random$step,
+		A2(elm$random$Random$float, -30, 30),
+		seed);
+	var y = _n0.a;
+	var _n1 = A2(
+		elm$random$Random$step,
+		A2(elm$random$Random$float, -30, 30),
+		seed);
+	var x = _n1.a;
+	var s1 = _n1.b;
+	return A5(
 		author$project$Examples$Balls$mkBall,
 		i,
 		A2(elm_explorations$linear_algebra$Math$Vector2$vec2, author$project$Examples$Balls$w / 2, 5),
-		A2(
-			elm_explorations$linear_algebra$Math$Vector2$vec2,
-			A2(elm$core$Basics$modBy, 20, i * 4236),
-			A2(elm$core$Basics$modBy, 32, i * 1234)),
-		author$project$Examples$Balls$ballColor(
-			elm$random$Random$initialSeed(i)));
+		A2(elm_explorations$linear_algebra$Math$Vector2$vec2, x, y),
+		author$project$Examples$Balls$ballColor(seed),
+		n);
 };
 var author$project$Examples$Balls$numBalls = 5;
 var elm$core$Basics$gt = _Utils_gt;
@@ -5721,11 +5771,6 @@ var elm$core$Array$compressNodes = F2(
 			}
 		}
 	});
-var elm$core$Basics$eq = _Utils_equal;
-var elm$core$Tuple$first = function (_n0) {
-	var x = _n0.a;
-	return x;
-};
 var elm$core$Array$treeFromBuilder = F2(
 	function (nodeList, nodeListSize) {
 		treeFromBuilder:
@@ -5803,7 +5848,6 @@ var elm$core$Array$initializeHelp = F5(
 			}
 		}
 	});
-var elm$core$Basics$remainderBy = _Basics_remainderBy;
 var elm$core$Array$initialize = F2(
 	function (len, fn) {
 		if (len <= 0) {
@@ -6013,7 +6057,7 @@ var author$project$Examples$Balls$init = function (_n0) {
 		author$project$Examples$Balls$genBall,
 		A2(elm$core$List$range, 1, author$project$Examples$Balls$numBalls));
 	return _Utils_Tuple2(
-		{balls: balls, texture: elm$core$Maybe$Nothing},
+		{balls: balls, textures: _List_Nil},
 		elm$core$Platform$Cmd$none);
 };
 var author$project$Examples$Balls$AnimationFrame = function (a) {
@@ -6804,7 +6848,7 @@ var author$project$Examples$Balls$subscriptions = function (model) {
 				elm$json$Json$Decode$succeed(author$project$Examples$Balls$MouseClick))
 			]));
 };
-var author$project$Examples$Balls$decay = 0.7;
+var author$project$Examples$Balls$decay = 1;
 var elm$core$Basics$ge = _Utils_ge;
 var elm_explorations$linear_algebra$Math$Vector2$getX = _MJS_v2getX;
 var elm_explorations$linear_algebra$Math$Vector2$getY = _MJS_v2getY;
@@ -6822,7 +6866,7 @@ var author$project$Examples$Balls$bounce = F2(
 				speed: A2(elm_explorations$linear_algebra$Math$Vector2$vec2, newVelX, newVelY)
 			});
 	});
-var author$project$Examples$Balls$h = 500;
+var author$project$Examples$Balls$h = 580;
 var author$project$Examples$Balls$mkBox = F4(
 	function (l, r, u, d) {
 		var inet = 2;
@@ -6906,7 +6950,7 @@ var author$project$Examples$Balls$collision = function (allBalls) {
 			_List_Nil,
 			allBalls));
 };
-var author$project$Examples$Balls$gForce = 1;
+var author$project$Examples$Balls$gForce = 0.7;
 var elm_explorations$linear_algebra$Math$Vector2$add = _MJS_v2add;
 var author$project$Examples$Balls$gravity = F2(
 	function (timestep, balls) {
@@ -6955,25 +6999,71 @@ var author$project$Examples$Balls$update = F2(
 					elm$core$Platform$Cmd$none);
 			default:
 				var m = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{texture: m}),
-					elm$core$Platform$Cmd$none);
+				if (m.$ === 'Nothing') {
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				} else {
+					var tex = m.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								textures: A2(elm$core$List$cons, tex, model.textures)
+							}),
+						elm$core$Platform$Cmd$none);
+				}
 		}
 	});
 var author$project$Examples$Balls$TextureLoaded = function (a) {
 	return {$: 'TextureLoaded', a: a};
 };
-var author$project$Examples$Balls$hambergerUrl = './hamberger.png';
+var author$project$Examples$Balls$textureUrls = _List_fromArray(
+	['./hamberger.png', './donut.png', './sushi.png']);
 var author$project$Examples$Balls$toTuple = function (v) {
 	return _Utils_Tuple2(
 		elm_explorations$linear_algebra$Math$Vector2$getX(v),
 		elm_explorations$linear_algebra$Math$Vector2$getY(v));
 };
 var avh4$elm_color$Color$black = A4(avh4$elm_color$Color$RgbaSpace, 0 / 255, 0 / 255, 0 / 255, 1.0);
-var avh4$elm_color$Color$white = A4(avh4$elm_color$Color$RgbaSpace, 255 / 255, 255 / 255, 255 / 255, 1.0);
+var avh4$elm_color$Color$rgb = F3(
+	function (r, g, b) {
+		return A4(avh4$elm_color$Color$RgbaSpace, r, g, b, 1.0);
+	});
 var elm$core$Basics$round = _Basics_round;
+var elm$core$List$drop = F2(
+	function (n, list) {
+		drop:
+		while (true) {
+			if (n <= 0) {
+				return list;
+			} else {
+				if (!list.b) {
+					return list;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs;
+					n = $temp$n;
+					list = $temp$list;
+					continue drop;
+				}
+			}
+		}
+	});
+var elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return elm$core$Maybe$Just(x);
+	} else {
+		return elm$core$Maybe$Nothing;
+	}
+};
+var elm_community$list_extra$List$Extra$getAt = F2(
+	function (idx, xs) {
+		return (idx < 0) ? elm$core$Maybe$Nothing : elm$core$List$head(
+			A2(elm$core$List$drop, idx, xs));
+	});
 var joakin$elm_canvas$Canvas$Internal$Canvas$Circle = F2(
 	function (a, b) {
 		return {$: 'Circle', a: a, b: b};
@@ -7897,8 +7987,9 @@ var author$project$Examples$Balls$view = function (model) {
 				]));
 	};
 	var renderBall = F2(
-		function (mTex, ball) {
-			if (mTex.$ === 'Nothing') {
+		function (texs, ball) {
+			var _n0 = A2(elm_community$list_extra$List$Extra$getAt, ball.texture_id, texs);
+			if (_n0.$ === 'Nothing') {
 				return A2(
 					joakin$elm_canvas$Canvas$shapes,
 					_List_fromArray(
@@ -7913,7 +8004,7 @@ var author$project$Examples$Balls$view = function (model) {
 							ball.radius)
 						]));
 			} else {
-				var tex = mTex.a;
+				var tex = _n0.a;
 				var _n1 = joakin$elm_canvas$Canvas$Texture$dimensions(tex);
 				var width = _n1.width;
 				var height = _n1.height;
@@ -7929,13 +8020,14 @@ var author$project$Examples$Balls$view = function (model) {
 	var boxShape = renderBox(author$project$Examples$Balls$boxOne);
 	var ballShapes = A2(
 		elm$core$List$map,
-		renderBall(model.texture),
+		renderBall(model.textures),
 		model.balls);
 	var background = A2(
 		joakin$elm_canvas$Canvas$shapes,
 		_List_fromArray(
 			[
-				joakin$elm_canvas$Canvas$Settings$fill(avh4$elm_color$Color$white)
+				joakin$elm_canvas$Canvas$Settings$fill(
+				A3(avh4$elm_color$Color$rgb, 0.9, 0.9, 0.9))
 			]),
 		_List_fromArray(
 			[
@@ -7949,10 +8041,12 @@ var author$project$Examples$Balls$view = function (model) {
 		joakin$elm_canvas$Canvas$toHtmlWith,
 		{
 			height: elm$core$Basics$round(author$project$Examples$Balls$h),
-			textures: _List_fromArray(
-				[
-					A2(joakin$elm_canvas$Canvas$Texture$loadFromImageUrl, author$project$Examples$Balls$hambergerUrl, author$project$Examples$Balls$TextureLoaded)
-				]),
+			textures: A2(
+				elm$core$List$map,
+				function (url) {
+					return A2(joakin$elm_canvas$Canvas$Texture$loadFromImageUrl, url, author$project$Examples$Balls$TextureLoaded);
+				},
+				author$project$Examples$Balls$textureUrls),
 			width: elm$core$Basics$round(author$project$Examples$Balls$w)
 		},
 		_List_Nil,
